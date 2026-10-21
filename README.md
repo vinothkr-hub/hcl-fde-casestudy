@@ -9,7 +9,7 @@ Two modes share one retrieval and abstention pipeline:
 | Mode | What it does | Needs |
 |---|---|---|
 | `extractive` (default) | Returns the verbatim supporting sentences with citations | Python only |
-| `llm` (optional) | A local model rephrases the retrieved sentences; output is verified and falls back to extractive on any problem | Python + Ollama |
+| `llm` (optional) | A local or hosted model rephrases the retrieved sentences; output is verified and falls back to extractive on verification or service errors | Python + Ollama or an OpenAI-compatible endpoint |
 
 ## 1. Prerequisites
 
@@ -61,13 +61,13 @@ Useful flags: `--debug` (reason code, top candidates and scores), `--json` (mach
 
 Run these in order. None of them need an LLM or the network.
 
-**Step 1: unit tests** (40 tests: retrieval, gate, guardrails, LLM grounding and fallback with a fake model, logging, CLI)
+**Step 1: unit tests** (44 tests: retrieval, gate, guardrails, LLM grounding and fallback with a fake model, logging, CLI)
 
 ```powershell
 python -m unittest discover -s tests -v
 ```
 
-Expected: `Ran 40 tests ... OK`.
+Expected: `Ran 44 tests ... OK`.
 
 **Step 2: the supplied questions**
 
@@ -108,9 +108,12 @@ python assistant.py -q "What's the maximum number of rows I can export to CSV?" 
 python eval/run_eval.py --mode llm
 ```
 
-Expected: answers are shorter and cited; an unanswerable question still abstains, because the gate runs before the model
-is ever called; if the model is slow or unreachable you get the extractive answer plus a `Note:` line.
-Live LLM runs depend on your local model and were not part of the automated test run (the LLM path is covered with a fake model).
+The retrieval gate runs before the model, so unanswerable questions are rejected without an LLM call. The model may still
+decline a supported question, or its answer may fail grounding checks; in that case the app abstains or returns the
+extractive answer, respectively. The automated tests use a fake model. In one live test with Ollama `llama3.2:3b`,
+the LLM evaluation scored 34/37 (0 false answers among 19 unanswerable questions; 15/18 answerable questions answered
+correctly). Treat this as an observed result for that model/run, not a guarantee for other models or runs. Extractive
+mode is the recommended default for predictable results.
 
 ### Reading the output
 
