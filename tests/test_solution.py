@@ -5,11 +5,13 @@ No network and no model are needed: the LLM client is replaced by a fake.
 
 from __future__ import annotations
 
+import io
 import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -206,6 +208,28 @@ class LLMModeTests(EngineTestBase):
         with self.assertRaises(LLMError):
             client.complete("system", "user")
 
+    def test_api_key_is_sent_as_bearer_authorization(self) -> None:
+        client = OpenAICompatibleClient(
+            LLMConfig(base_url="https://example.com/v1", api_key="test-secret")
+        )
+        with patch(
+            "solstice_qa.llm.urllib.request.urlopen",
+            return_value=io.BytesIO(b'{"data": []}'),
+        ) as urlopen:
+            client.list_models()
+        request = urlopen.call_args.args[0]
+        self.assertEqual("Bearer test-secret", request.get_header("Authorization"))
+
+    def test_authorization_header_is_omitted_without_api_key(self) -> None:
+        client = OpenAICompatibleClient(LLMConfig(base_url="http://localhost:11434/v1"))
+        with patch(
+            "solstice_qa.llm.urllib.request.urlopen",
+            return_value=io.BytesIO(b'{"data": []}'),
+        ) as urlopen:
+            client.list_models()
+        request = urlopen.call_args.args[0]
+        self.assertIsNone(request.get_header("Authorization"))
+
     def test_list_models_handles_null_data_from_ollama(self) -> None:
         client = OpenAICompatibleClient(LLMConfig(base_url="http://localhost:11434/v1"))
         client._request = lambda path, payload=None: {"object": "list", "data": None}  # type: ignore[method-assign]
@@ -270,6 +294,12 @@ class CliTests(unittest.TestCase):
 
     def test_check_llm_reports_not_ready_when_endpoint_is_down(self) -> None:
         self.assertEqual(1, cli_main(["--check-llm", "--llm-base-url", "http://127.0.0.1:9/v1"]))
+
+    def test_check_llm_checks_chat_completion(self) -> None:
+        with patch("solstice_qa.cli.OpenAICompatibleClient") as client_class:
+            self.assertEqual(0, cli_main(["--check-llm"]))
+        client_class.return_value.complete.assert_called_once()
+        client_class.return_value.list_models.assert_not_called()
 
 
 if __name__ == "__main__":

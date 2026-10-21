@@ -31,8 +31,11 @@ Check the setup with:
 python assistant.py --check-llm
 ```
 
-It prints `READY`, or tells you what is missing. If Ollama is not running, `--mode llm` still works: it
-falls back to the extractive answer and prints a note, so a demo never breaks.
+This sends a minimal chat-completion request to verify the configured endpoint, model, and credentials; it prints
+`READY` or reports the failure. For Ollama, ensure the service is running and the model is pulled. For a hosted
+OpenAI-compatible endpoint, set `LLM_BASE_URL`, `LLM_MODEL`, and (if required) `LLM_API_KEY` in the environment.
+If the endpoint is unavailable, `--mode llm` still falls back to the extractive answer and prints a note, so a demo
+never breaks.
 
 ## 2. Quick start
 

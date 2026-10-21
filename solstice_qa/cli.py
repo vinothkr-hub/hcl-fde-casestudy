@@ -57,7 +57,7 @@ def _build_parser() -> argparse.ArgumentParser:
     target = parser.add_mutually_exclusive_group()
     target.add_argument("--examples", action="store_true", help="run the supplied example questions")
     target.add_argument("--question", "-q", help="ask one question (omit for interactive mode)")
-    target.add_argument("--check-llm", action="store_true", help="check the local LLM endpoint and exit")
+    target.add_argument("--check-llm", action="store_true", help="check the configured LLM endpoint and exit")
     parser.add_argument(
         "--mode",
         choices=MODES,
@@ -82,15 +82,13 @@ def _build_parser() -> argparse.ArgumentParser:
 def _check_llm(config: LLMConfig) -> int:
     print(f"Endpoint: {config.base_url}\nModel:    {config.model}")
     try:
-        models = OpenAICompatibleClient(config).list_models()
+        OpenAICompatibleClient(config).complete(
+            "You are checking whether this model endpoint is ready.",
+            "Reply with OK.",
+        )
     except LLMError as exc:
         print(f"NOT READY: {exc}")
-        print("Start Ollama and run: ollama pull " + config.model)
-        return 1
-    if config.model not in models and not any(m.split(":")[0] == config.model for m in models):
-        print(f"Endpoint is up but model '{config.model}' is not installed.")
-        print(f"Installed: {', '.join(models) or 'none'}")
-        print(f"Run: ollama pull {config.model}")
+        print("Check that the endpoint is running, the model is available, and credentials are valid.")
         return 1
     print("READY")
     return 0
