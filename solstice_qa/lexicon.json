@@ -1,0 +1,30 @@
+{
+  "_comment": "Language data, not logic. Edit here to tune matching without touching code. Synonym groups map every member to the first word. 'solstice' is a stop word because it is the product name and carries no discriminating signal.",
+  "stop_words": [
+    "a", "about", "after", "all", "also", "am", "an", "and", "any", "are", "as", "at",
+    "be", "been", "before", "by", "can", "could", "did", "do", "does", "each", "for",
+    "from", "get", "give", "happen", "happens", "has", "have", "how", "i", "if", "in",
+    "into", "is", "it", "its", "long", "make", "many", "may", "me", "mean", "means",
+    "might", "more", "most", "much", "must", "my", "need", "no", "not", "number",
+    "of", "on", "or", "our", "over", "per", "please", "should", "so", "solstice",
+    "someone", "tell", "than", "that", "the", "their", "them", "then", "there",
+    "these", "this", "to", "up", "us", "use", "using", "want", "was", "we", "were",
+    "what", "when", "where", "which", "who", "why", "will", "with", "within", "would",
+    "yes", "you", "your"
+  ],
+  "synonym_groups": [
+    ["reset", "forgot", "forgotten", "recover"],
+    ["expire", "expiry", "expiration", "valid", "validity"],
+    ["retain", "kept", "keep", "retention"],
+    ["email", "receive", "send", "sent", "mail"],
+    ["update", "change", "modify", "edit"],
+    ["export", "download"],
+    ["limit", "cap", "maximum", "max", "quota"],
+    ["request", "call"],
+    ["charge", "payment"],
+    ["row", "record"],
+    ["invite", "invitation", "add"],
+    ["member", "user", "teammate"],
+    ["admin", "administrator"]
+  ]
+}
